@@ -27,7 +27,8 @@ namespace Subscriber.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<double>("BMI")
-                        .HasColumnType("float");
+                        .HasColumnType("float")
+                        .HasDefaultValue(0);
 
                     b.Property<double>("Height")
                         .HasColumnType("float");

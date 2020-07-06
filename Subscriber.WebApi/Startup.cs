@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Subscriber.Data;
 using Subscriber.Services.Interfaces;
 using Subscriber.Data.Models;
-
+using Subscriber.Services;
 
 namespace Subscriber.WebApi
 {
@@ -30,6 +30,8 @@ namespace Subscriber.WebApi
             (options => options.UseSqlServer(Configuration.GetConnectionString("WeightWatchersContext")));
             services.AddScoped<ICardService, CardService>();
             services.AddScoped<ICardRepository, CardRepository>();
+            services.AddScoped<ISubscriberRepository, SubscriberRepository>();
+            services.AddScoped<ISubscriberServices, SubscriberServices>(); 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(setupAction =>
             {
@@ -59,7 +61,6 @@ namespace Subscriber.WebApi
                     "/swagger/WeightWatchersOpenAPI/swagger.json",
                     "WeightWatchers API");
             });
-            app.UseMiddleware<CardErrorHandlingMiddleware>();
 
             app.UseRouting();
 

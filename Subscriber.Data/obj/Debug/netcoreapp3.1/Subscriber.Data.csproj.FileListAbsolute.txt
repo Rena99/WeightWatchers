@@ -1,0 +1,16 @@
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Data.deps.json
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Data.dll
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Data.pdb
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.csprojAssemblyReference.cache
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.AssemblyInfoInputs.cache
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.AssemblyInfo.cs
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.dll
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.pdb
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Data.runtimeconfig.json
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Data.runtimeconfig.dev.json
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.genruntimeconfig.cache
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Services.dll
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Services.pdb
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.csproj.CopyComplete
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\bin\Debug\netcoreapp3.1\Subscriber.Data.dll.config
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.Data\obj\Debug\netcoreapp3.1\Subscriber.Data.csproj.CoreCompileInputs.cache

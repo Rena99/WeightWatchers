@@ -8,8 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Subscriber.Data;
 using Subscriber.Services.Interfaces;
-using Subscriber.Data.Models;
 using Subscriber.Services;
+using Subscriber.Models;
 
 namespace Subscriber.WebApi
 {
@@ -31,7 +31,9 @@ namespace Subscriber.WebApi
             services.AddScoped<ICardService, CardService>();
             services.AddScoped<ICardRepository, CardRepository>();
             services.AddScoped<ISubscriberRepository, SubscriberRepository>();
-            services.AddScoped<ISubscriberServices, SubscriberServices>(); 
+            services.AddScoped<ISubscriberServices, SubscriberServices>();
+            services.AddScoped<IMeasureRepository, MeasureRepository>();
+            services.AddScoped<IMeasureService, MeasureService>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(setupAction =>
             {

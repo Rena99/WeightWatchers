@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Subscriber.Data.Models;
+using Subscriber.Models;
 using Subscriber.Services.Interfaces;
 using Subscriber.Services.Models;
 using System;
@@ -18,23 +19,29 @@ namespace Subscriber.Data
             this.weightWatchers = weightWatchers;
             this.mapper = mapper;
         }
-        public MUser GetCard(int id)
+        public UserModel GetCard(int id)
         {
-            try
+            Card card = weightWatchers.Cards.FirstOrDefault(c => c.Id == id);
+            CardModel mCard = mapper.Map<CardModel>(card);
+            SubscriberModel subscriber = mapper.Map<SubscriberModel>(weightWatchers.Subscribers.FirstOrDefault(s => s.Id == card.SubscriberId));
+            return new UserModel()
             {
-                Card card = weightWatchers.Cards.FirstOrDefault(c => c.Id == id);
-                MCard mCard = mapper.Map<MCard>(card);
-                MSubscriber subscriber = mapper.Map<MSubscriber>(weightWatchers.Subscribers.FirstOrDefault(s=>s.Id==card.SubscriberId));
-                return new MUser()
-                {
-                    Card = mCard,
-                    Subscriber = subscriber
-                };
-            }
-            catch
-            {
-                return null;
-            }
+                Card = mCard,
+                Subscriber = subscriber
+            };
+        }
+        public void UpdateCard(MeasureModel cardModel)
+        {
+            Card card = weightWatchers.Cards.FirstOrDefault(c => c.Id == cardModel.CardId);
+            card.UpdateDate = DateTime.Now;
+            card.Weight = (double)cardModel.Weight;
+            card.BMI = CalculateBMI(card.Height, card.Weight);
+            weightWatchers.SaveChanges();
+        }
+
+        private double CalculateBMI(double height, double weight)
+        {
+            return weight / Math.Pow(height, 2);
         }
     }
 }

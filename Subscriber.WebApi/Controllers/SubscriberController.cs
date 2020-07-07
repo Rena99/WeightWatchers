@@ -18,6 +18,7 @@ namespace Subscriber.WebApi.Controllers
     {
         private readonly ISubscriberServices SubscriberServices;
         private readonly IMapper _mapper;
+        
 
         public SubscriberController(IMapper mapper,ISubscriberServices subscriberServices)
         {
@@ -28,7 +29,7 @@ namespace Subscriber.WebApi.Controllers
         [HttpPost]
         public bool Post([FromBody] DTOSubscriber subscriber)
         {
-            return SubscriberServices.NewSubscriber(_mapper.Map<MUser>(subscriber));
+            return SubscriberServices.NewSubscriber(_mapper.Map<UserModel>(subscriber));
         }
         [HttpPost("login")]
         public IActionResult PostLogin([FromQuery] string email, [FromQuery] string password)

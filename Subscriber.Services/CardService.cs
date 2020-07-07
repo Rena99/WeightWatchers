@@ -8,13 +8,22 @@ namespace Subscriber.Services.Interfaces
     public class CardService : ICardService
     {
         private readonly ICardRepository cardRepository;
+
+        public CardService()
+        {
+        }
+
         public CardService(ICardRepository cardRepository)
         {
             this.cardRepository = cardRepository;
         }
-        public MUser GetCard(int id)
+        public UserModel GetCard(int id)
         {
             return cardRepository.GetCard(id);
+        }
+        public void UpdateCard(MeasureModel cardModel)
+        {
+            cardRepository.UpdateCard(cardModel);
         }
     }
 }

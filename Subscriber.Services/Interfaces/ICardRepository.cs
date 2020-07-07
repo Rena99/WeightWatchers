@@ -7,6 +7,7 @@ namespace Subscriber.Services.Interfaces
 {
     public interface ICardRepository
     {
-        MUser GetCard(int id);
+        UserModel GetCard(int id);
+        void UpdateCard(MeasureModel cardModel);
     }
 }

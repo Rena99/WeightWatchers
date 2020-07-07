@@ -50,6 +50,10 @@
               "target": "Package",
               "version": "[7.0.0, )"
             },
+            "Autofac.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[3.1.5, )"
@@ -64,9 +68,45 @@
               "target": "Package",
               "version": "[3.1.5, )"
             },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.0.20, )"
+            },
+            "NHibernate": {
+              "target": "Package",
+              "version": "[5.2.7, )"
+            },
+            "NServiceBus": {
+              "target": "Package",
+              "version": "[7.3.0, )"
+            },
+            "NServiceBus.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
+            "NServiceBus.Persistence.Sql": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "NServiceBus.RabbitMQ": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "NServiceBus.SagaAudit": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "NServiceBus.SqlServer": {
+              "target": "Package",
+              "version": "[6.1.1, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[5.5.1, )"
+            },
+            "System.Configuration.ConfigurationManager": {
+              "target": "Package",
+              "version": "[4.7.0, )"
             }
           },
           "imports": [
@@ -139,6 +179,10 @@
               "target": "Package",
               "version": "[7.0.0, )"
             },
+            "Autofac.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[3.1.5, )"
@@ -148,6 +192,38 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[3.1.5, )"
+            },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.0.20, )"
+            },
+            "NHibernate": {
+              "target": "Package",
+              "version": "[5.2.7, )"
+            },
+            "NServiceBus": {
+              "target": "Package",
+              "version": "[7.3.0, )"
+            },
+            "NServiceBus.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
+            "NServiceBus.Persistence.Sql": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "NServiceBus.RabbitMQ": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "NServiceBus.SagaAudit": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "NServiceBus.SqlServer": {
+              "target": "Package",
+              "version": "[6.1.1, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",

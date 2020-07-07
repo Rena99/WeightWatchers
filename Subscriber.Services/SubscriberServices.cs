@@ -18,9 +18,11 @@ namespace Subscriber.Services
            return subscriberRepository.checkSubscriberEmail(email, password);
         }
 
-        public bool NewSubscriber(MUser mUser)
+        public bool NewSubscriber(UserModel mUser)
         {
             return subscriberRepository.NewSubscriber(mUser);
         }
+
+       
     }
 }

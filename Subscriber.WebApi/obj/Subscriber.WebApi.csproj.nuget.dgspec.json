@@ -4,6 +4,102 @@
     "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\Subscriber.WebApi\\Subscriber.WebApi.csproj": {}
   },
   "projects": {
+    "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\MessagesClasses\\MessagesClasses.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\MessagesClasses\\MessagesClasses.csproj",
+        "projectName": "MessagesClasses",
+        "projectPath": "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\MessagesClasses\\MessagesClasses.csproj",
+        "packagesPath": "C:\\Users\\rina lerner\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\MessagesClasses\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\rina lerner\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "dependencies": {
+            "Autofac.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.0.20, )"
+            },
+            "NHibernate": {
+              "target": "Package",
+              "version": "[5.2.7, )"
+            },
+            "NServiceBus": {
+              "target": "Package",
+              "version": "[7.3.0, )"
+            },
+            "NServiceBus.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
+            "NServiceBus.Persistence.Sql": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "NServiceBus.RabbitMQ": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "NServiceBus.SagaAudit": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "NServiceBus.SqlServer": {
+              "target": "Package",
+              "version": "[6.1.1, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[3.1.2, 3.1.2]"
+            }
+          ],
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\3.1.300\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
     "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\Subscriber.Data\\Subscriber.Data.csproj": {
       "version": "1.0.0",
       "restore": {
@@ -50,6 +146,10 @@
               "target": "Package",
               "version": "[7.0.0, )"
             },
+            "Autofac.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
               "version": "[3.1.5, )"
@@ -64,9 +164,45 @@
               "target": "Package",
               "version": "[3.1.5, )"
             },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.0.20, )"
+            },
+            "NHibernate": {
+              "target": "Package",
+              "version": "[5.2.7, )"
+            },
+            "NServiceBus": {
+              "target": "Package",
+              "version": "[7.3.0, )"
+            },
+            "NServiceBus.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
+            "NServiceBus.Persistence.Sql": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "NServiceBus.RabbitMQ": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "NServiceBus.SagaAudit": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "NServiceBus.SqlServer": {
+              "target": "Package",
+              "version": "[6.1.1, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[5.5.1, )"
+            },
+            "System.Configuration.ConfigurationManager": {
+              "target": "Package",
+              "version": "[4.7.0, )"
             }
           },
           "imports": [
@@ -139,6 +275,10 @@
               "target": "Package",
               "version": "[7.0.0, )"
             },
+            "Autofac.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore.Sqlite": {
               "target": "Package",
               "version": "[3.1.5, )"
@@ -148,6 +288,38 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[3.1.5, )"
+            },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.0.20, )"
+            },
+            "NHibernate": {
+              "target": "Package",
+              "version": "[5.2.7, )"
+            },
+            "NServiceBus": {
+              "target": "Package",
+              "version": "[7.3.0, )"
+            },
+            "NServiceBus.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
+            "NServiceBus.Persistence.Sql": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "NServiceBus.RabbitMQ": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "NServiceBus.SagaAudit": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "NServiceBus.SqlServer": {
+              "target": "Package",
+              "version": "[6.1.1, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
@@ -213,6 +385,9 @@
         "frameworks": {
           "netcoreapp3.1": {
             "projectReferences": {
+              "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\MessagesClasses\\MessagesClasses.csproj": {
+                "projectPath": "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\MessagesClasses\\MessagesClasses.csproj"
+              },
               "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\Subscriber.Data\\Subscriber.Data.csproj": {
                 "projectPath": "C:\\Users\\rina lerner\\Documents\\Brix\\Weight Watchers\\Subscriber.Data\\Subscriber.Data.csproj"
               },
@@ -239,6 +414,10 @@
               "target": "Package",
               "version": "[7.0.0, )"
             },
+            "Autofac.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
               "version": "[3.1.5, )"
@@ -256,6 +435,38 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[3.1.5, )"
+            },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.0.20, )"
+            },
+            "NHibernate": {
+              "target": "Package",
+              "version": "[5.2.7, )"
+            },
+            "NServiceBus": {
+              "target": "Package",
+              "version": "[7.3.0, )"
+            },
+            "NServiceBus.Extensions.Hosting": {
+              "target": "Package",
+              "version": "[1.0.1, )"
+            },
+            "NServiceBus.Persistence.Sql": {
+              "target": "Package",
+              "version": "[6.0.1, )"
+            },
+            "NServiceBus.RabbitMQ": {
+              "target": "Package",
+              "version": "[5.2.0, )"
+            },
+            "NServiceBus.SagaAudit": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "NServiceBus.SqlServer": {
+              "target": "Package",
+              "version": "[6.1.1, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",

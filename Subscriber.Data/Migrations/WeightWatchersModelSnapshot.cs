@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Subscriber.Data.Models;
+using Subscriber.Models;
 
 namespace Subscriber.Data.Migrations
 {
@@ -19,6 +19,35 @@ namespace Subscriber.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("Subscriber.Data.Entities.Measure", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CardId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Comments")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Weight")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CardId");
+
+                    b.ToTable("Measures");
+                });
+
             modelBuilder.Entity("Subscriber.Data.Models.Card", b =>
                 {
                     b.Property<int>("Id")
@@ -27,8 +56,7 @@ namespace Subscriber.Data.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<double>("BMI")
-                        .HasColumnType("float")
-                        .HasDefaultValue(0);
+                        .HasColumnType("float");
 
                     b.Property<double>("Height")
                         .HasColumnType("float");
@@ -73,6 +101,15 @@ namespace Subscriber.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Subscribers");
+                });
+
+            modelBuilder.Entity("Subscriber.Data.Entities.Measure", b =>
+                {
+                    b.HasOne("Subscriber.Data.Models.Card", "Card")
+                        .WithMany()
+                        .HasForeignKey("CardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Subscriber.Data.Models.Card", b =>

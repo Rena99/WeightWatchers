@@ -8,6 +8,6 @@ namespace Subscriber.Services.Interfaces
     public interface ISubscriberRepository
     {
         int checkSubscriberEmail(string email,string password);
-        bool NewSubscriber(MUser mUser);
+        bool NewSubscriber(UserModel mUser);
     }
 }

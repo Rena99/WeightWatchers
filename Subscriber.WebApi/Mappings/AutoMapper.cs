@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using MessagesClasses;
 using Subscriber.Data.Entities;
-using Subscriber.Data.Models;
 using Subscriber.Services.Models;
 using Subscriber.WebApi.DTO;
 using System;
@@ -14,15 +13,18 @@ namespace Subscriber.WebApi.Mappings
     {
         public AutoMapper()
         {
-            CreateMap<Data.Models.Subscriber, SubscriberModel>();
+            CreateMap<Data.Entities.Subscriber, SubscriberModel>();
             CreateMap<CardModel, Card>();
-            CreateMap<SubscriberModel, Data.Models.Subscriber>();
+            CreateMap<SubscriberModel, Data.Entities.Subscriber>();
             CreateMap<Card, CardModel>();
             CreateMap<MeasureReceived, CardModel>();
             CreateMap<DTOMeasure, MeasureModel>();
             CreateMap<MeasureReceived, MeasureModel>();
             CreateMap<DTOMeasure, MeasureReceived>();
             CreateMap<MeasureModel, Measure>();
+            CreateMap<Tracking, TrackingModel>();
+            CreateMap<TrackingModel, DTOTracking>();
+            CreateMap<TrackingModel, Tracking>();
             CreateMap<UserModel, DTOCard>()
                 .ForMember(d => d.FirstName, a => a.MapFrom(s => s.Subscriber.FirstName))
                 .ForMember(d => d.LastName, a => a.MapFrom(s => s.Subscriber.LastName))

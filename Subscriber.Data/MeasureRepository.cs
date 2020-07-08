@@ -23,9 +23,20 @@ namespace Subscriber.Data
         {
             Measure measure1 = mapper.Map<Measure>(measure);
             measure1.Date = DateTime.Now;
-            context.Measures.Add(measure1);
+            Measure meas = context.Measures.FirstOrDefault(m => m.CardId == measure.CardId);
+            if (meas != null)
+            {
+                meas.Date = measure1.Date;
+                meas.Status = measure1.Status;
+                meas.Weight = measure1.Weight;
+            }
+            else
+            {
+                context.Measures.Add(measure1);
+            }
             context.SaveChanges();
-            return context.Measures.LastOrDefault().Id;
+            meas = context.Measures.FirstOrDefault(m => m.CardId == measure.CardId);
+            return meas.Id;
         }
 
         public void UpdateStatus(int measureId)

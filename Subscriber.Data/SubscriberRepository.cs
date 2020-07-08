@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Subscriber.Data.Models;
+using Subscriber.Data.Entities;
 using Subscriber.Models;
 using Subscriber.Services.Interfaces;
 using Subscriber.Services.Models;
@@ -27,7 +27,7 @@ namespace Subscriber.Data
        
         public int checkSubscriberEmail(string email, string password)
         {
-            Models.Subscriber subscriber = new Models.Subscriber();
+            Entities.Subscriber subscriber = new Entities.Subscriber();
             foreach (var item in context.Subscribers)
             {
                 if (item.Email==email&&AreEqual(password, item.Password, salt))
@@ -55,7 +55,7 @@ namespace Subscriber.Data
                     return false;
                 }
             }
-            Models.Subscriber subscriber = _mapper.Map<Models.Subscriber>(mUser.Subscriber);
+            Entities.Subscriber subscriber = _mapper.Map<Entities.Subscriber>(mUser.Subscriber);
             subscriber.Password = GenerateHash(subscriber.Password, salt);
             subscriber.Id = Guid.NewGuid();
             Card card = _mapper.Map<Card>(mUser.Card);

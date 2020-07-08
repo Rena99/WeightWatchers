@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 
-namespace Subscriber.Data.Models
+namespace Subscriber.Data.Entities
 {
     public class Card
     {

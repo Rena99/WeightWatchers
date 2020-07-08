@@ -28,9 +28,9 @@ create or replace function pg_temp.create_saga_table_AddMeasureHandler(tablePref
 );';
         execute script;
 
-/* AddProperty Id */
+/* AddProperty SagaId */
 
-        script = 'alter table "' || schema || '"."' || tableNameNonQuoted || '" add column if not exists "Correlation_Id" character varying(200)';
+        script = 'alter table "' || schema || '"."' || tableNameNonQuoted || '" add column if not exists "Correlation_SagaId" character varying(200)';
         execute script;
 
 /* VerifyColumnType String */
@@ -41,15 +41,15 @@ create or replace function pg_temp.create_saga_table_AddMeasureHandler(tablePref
             where
             table_schema = schema and
             table_name = tableNameNonQuoted and
-            column_name = 'Correlation_Id'
+            column_name = 'Correlation_SagaId'
         );
         if columnType <> 'character varying' then
-            raise exception 'Incorrect data type for Correlation_Id. Expected "character varying" got "%"', columnType;
+            raise exception 'Incorrect data type for Correlation_SagaId. Expected "character varying" got "%"', columnType;
         end if;
 
-/* WriteCreateIndex Id */
+/* WriteCreateIndex SagaId */
 
-        script = 'create unique index if not exists "' || tablePrefix || '_i_26DD63AEEA5E7B1B5C77FC30D30A0F53C04CFD2E" on "' || schema || '"."' || tableNameNonQuoted || '" using btree ("Correlation_Id" asc);';
+        script = 'create unique index if not exists "' || tablePrefix || '_i_A87E60C35FFA35BBF77C13E26A541CA55D1F87D7" on "' || schema || '"."' || tableNameNonQuoted || '" using btree ("Correlation_SagaId" asc);';
         execute script;
 /* PurgeObsoleteIndex */
 
@@ -62,7 +62,7 @@ for columnToDelete in
     where
         table_name = tableNameNonQuoted and
         column_name LIKE 'Correlation_%' and
-        column_name <> 'Correlation_Id'
+        column_name <> 'Correlation_SagaId'
 )
 loop
 	script = '

@@ -18,12 +18,10 @@ namespace Subscriber.WebApi.Controllers
     public class MeasureController : ControllerBase
     {
         private readonly IMapper mapper;
-        private readonly IMeasureService measureService;
         private readonly IMessageSession messageSession;
-        public MeasureController(IMapper mapper, IMeasureService measureService, IMessageSession messageSession)
+        public MeasureController(IMapper mapper, IMessageSession messageSession)
         {
             this.mapper = mapper;
-            this.measureService = measureService;
             this.messageSession = messageSession;
         }
         [HttpPost]

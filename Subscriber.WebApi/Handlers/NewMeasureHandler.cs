@@ -19,13 +19,11 @@ namespace Subscriber.WebApi
         public Task Handle(MeasureReceived message, IMessageHandlerContext context)
         {
             cardService.UpdateCard(mapper.Map<MeasureModel>(message));
-            var options = new SendOptions();
-            options.RequiredImmediateDispatch();
             var updateMeasure = new UpdateMeasureStatus
             {
                 Id = message.Id
             };
-            return context.Send(updateMeasure, options);
+            return context.SendLocal(updateMeasure);
         }
     }
 }

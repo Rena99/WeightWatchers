@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Subscriber.Services.Interfaces;
 using AutoMapper;
 using Subscriber.Services;
+using MessagesClasses;
 
 namespace Subscriber.WebApi
 {
@@ -77,6 +78,8 @@ namespace Subscriber.WebApi
                endpointConfiguration.AuditProcessedMessagesTo("audit");
                //endpointConfiguration.AuditSagaStateChanges(
                //        serviceControlQueue: "Particular.weightwatchers");
+               //var routing = transport.Routing();
+               //routing.RouteToEndpoint(assembly: typeof(UpdateMeasureStatus).Assembly, destination: "Add");
                var conventions = endpointConfiguration.Conventions();
                conventions.DefiningCommandsAs(type => type.Namespace == "Messages.Commands");
                conventions.DefiningEventsAs(type => type.Namespace == "Messages.Events");

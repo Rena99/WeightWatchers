@@ -2,7 +2,6 @@
 using System.Collections.Specialized;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using Subscriber.Data.Models;
 using Subscriber.Data.Entities;
 
 namespace Subscriber.Models
@@ -19,8 +18,9 @@ namespace Subscriber.Models
 
         }
         public DbSet<Card> Cards { get; set; }
-        public DbSet<Data.Models.Subscriber> Subscribers { get; set; }
+        public DbSet<Data.Entities.Subscriber> Subscribers { get; set; }
         public DbSet<Measure> Measures { get; set; }
+        public DbSet<Tracking> Trackings { get; set; }
 
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)

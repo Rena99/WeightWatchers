@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Subscriber.Data.Models;
 using Subscriber.Services.Interfaces;
 using Subscriber.WebApi.DTO;
 

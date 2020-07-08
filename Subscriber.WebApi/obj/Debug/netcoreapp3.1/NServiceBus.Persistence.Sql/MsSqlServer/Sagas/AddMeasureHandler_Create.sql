@@ -32,57 +32,57 @@ set @createTable = '
 exec(@createTable);
 end
 
-/* AddProperty Id */
+/* AddProperty SagaId */
 
 if not exists
 (
   select * from sys.columns
   where
-    name = N'Correlation_Id' and
+    name = N'Correlation_SagaId' and
     object_id = object_id(@tableName)
 )
 begin
-  declare @createColumn_Id nvarchar(max);
-  set @createColumn_Id = '
+  declare @createColumn_SagaId nvarchar(max);
+  set @createColumn_SagaId = '
   alter table ' + @tableName + N'
-    add Correlation_Id nvarchar(200);';
-  exec(@createColumn_Id);
+    add Correlation_SagaId nvarchar(200);';
+  exec(@createColumn_SagaId);
 end
 
 /* VerifyColumnType String */
 
-declare @dataType_Id nvarchar(max);
-set @dataType_Id = (
+declare @dataType_SagaId nvarchar(max);
+set @dataType_SagaId = (
   select data_type
   from INFORMATION_SCHEMA.COLUMNS
   where
     table_name = @tableNameWithoutSchema and
     table_schema = @schema and
-    column_name = 'Correlation_Id'
+    column_name = 'Correlation_SagaId'
 );
-if (@dataType_Id <> 'nvarchar')
+if (@dataType_SagaId <> 'nvarchar')
   begin
-    declare @error_Id nvarchar(max) = N'Incorrect data type for Correlation_Id. Expected nvarchar got ' + @dataType_Id + '.';
-    throw 50000, @error_Id, 0
+    declare @error_SagaId nvarchar(max) = N'Incorrect data type for Correlation_SagaId. Expected nvarchar got ' + @dataType_SagaId + '.';
+    throw 50000, @error_SagaId, 0
   end
 
-/* WriteCreateIndex Id */
+/* WriteCreateIndex SagaId */
 
 if not exists
 (
     select *
     from sys.indexes
     where
-        name = N'Index_Correlation_Id' and
+        name = N'Index_Correlation_SagaId' and
         object_id = object_id(@tableName)
 )
 begin
-  declare @createIndex_Id nvarchar(max);
-  set @createIndex_Id = N'
-  create unique index Index_Correlation_Id
-  on ' + @tableName + N'(Correlation_Id)
-  where Correlation_Id is not null;';
-  exec(@createIndex_Id);
+  declare @createIndex_SagaId nvarchar(max);
+  set @createIndex_SagaId = N'
+  create unique index Index_Correlation_SagaId
+  on ' + @tableName + N'(Correlation_SagaId)
+  where Correlation_SagaId is not null;';
+  exec(@createIndex_SagaId);
 end
 
 /* PurgeObsoleteIndex */
@@ -96,7 +96,7 @@ select @dropIndexQuery =
         Id = object_id(@tableName) and
         Name is not null and
         Name like 'Index_Correlation_%' and
-        Name <> N'Index_Correlation_Id'
+        Name <> N'Index_Correlation_SagaId'
 );
 exec sp_executesql @dropIndexQuery
 
@@ -111,7 +111,7 @@ select @dropPropertiesQuery =
         table_name = @tableNameWithoutSchema and
         table_schema = @schema and
         column_name like 'Correlation_%' and
-        column_name <> N'Correlation_Id'
+        column_name <> N'Correlation_SagaId'
 );
 exec sp_executesql @dropPropertiesQuery
 

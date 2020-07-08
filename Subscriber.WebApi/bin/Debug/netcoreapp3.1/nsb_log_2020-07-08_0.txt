@@ -1,0 +1,1603 @@
+﻿2020-07-08 09:49:17.137 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 09:49:17.394 INFO  Auditing processed messages to 'audit'
+2020-07-08 09:49:17.506 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 09:49:33.260 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 09:49:33.568 INFO  Auditing processed messages to 'audit'
+2020-07-08 09:49:33.673 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:00:01.975 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:00:04.118 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:00:04.787 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:00:26.428 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:00:27.824 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:00:30.098 ERROR Could not complete the installation. 
+System.Exception: Failed to ExecuteNonQuery. CommandText:
+
+/* TableNameVariable */
+
+declare @tableName nvarchar(max) = '[' + @schema + '].[' + @tablePrefix + N'AddMeasureHandler]';
+declare @tableNameWithoutSchema nvarchar(max) = @tablePrefix + N'AddMeasureHandler';
+
+
+/* Initialize */
+
+/* CreateTable */
+
+if not exists
+(
+    select *
+    from sys.objects
+    where
+        object_id = object_id(@tableName) and
+        type in ('U')
+)
+begin
+declare @createTable nvarchar(max);
+set @createTable = '
+    create table ' + @tableName + '(
+        Id uniqueidentifier not null primary key,
+        Metadata nvarchar(max) not null,
+        Data nvarchar(max) not null,
+        PersistenceVersion varchar(23) not null,
+        SagaTypeVersion varchar(23) not null,
+        Concurrency int not null
+    )
+';
+exec(@createTable);
+end
+
+/* AddProperty Id */
+
+if not exists
+(
+  select * from sys.columns
+  where
+    name = N'Correlation_Id' and
+    object_id = object_id(@tableName)
+)
+begin
+  declare @createColumn_Id nvarchar(max);
+  set @createColumn_Id = '
+  alter table ' + @tableName + N'
+    add Correlation_Id nvarchar(200);';
+  exec(@createColumn_Id);
+end
+
+/* VerifyColumnType String */
+
+declare @dataType_Id nvarchar(max);
+set @dataType_Id = (
+  select data_type
+  from INFORMATION_SCHEMA.COLUMNS
+  where
+    table_name = @tableNameWithoutSchema and
+    table_schema = @schema and
+    column_name = 'Correlation_Id'
+);
+if (@dataType_Id <> 'nvarchar')
+  begin
+    declare @error_Id nvarchar(max) = N'Incorrect data type for Correlation_Id. Expected nvarchar got ' + @dataType_Id + '.';
+    throw 50000, @error_Id, 0
+  end
+
+/* WriteCreateIndex Id */
+
+if not exists
+(
+    select *
+    from sys.indexes
+    where
+        name = N'Index_Correlation_Id' and
+        object_id = object_id(@tableName)
+)
+begin
+  declare @createIndex_Id nvarchar(max);
+  set @createIndex_Id = N'
+  create unique index Index_Correlation_Id
+  on ' + @tableName + N'(Correlation_Id)
+  where Correlation_Id is not null;';
+  exec(@createIndex_Id);
+end
+
+/* PurgeObsoleteIndex */
+
+declare @dropIndexQuery nvarchar(max);
+select @dropIndexQuery =
+(
+    select 'drop index ' + name + ' on ' + @tableName + ';'
+    from sysindexes
+    where
+        Id = object_id(@tableName) and
+        Name is not null and
+        Name like 'Index_Correlation_%' and
+        Name <> N'Index_Correlation_Id'
+);
+exec sp_executesql @dropIndexQuery
+
+/* PurgeObsoleteProperties */
+
+declare @dropPropertiesQuery nvarchar(max);
+select @dropPropertiesQuery =
+(
+    select 'alter table ' + @tableName + ' drop column ' + column_name + ';'
+    from INFORMATION_SCHEMA.COLUMNS
+    where
+        table_name = @tableNameWithoutSchema and
+        table_schema = @schema and
+        column_name like 'Correlation_%' and
+        column_name <> N'Correlation_Id'
+);
+exec sp_executesql @dropPropertiesQuery
+
+/* CompleteSagaScript */
+
+ ---> System.Data.SqlClient.SqlException (0x80131904): Incorrect data type for Correlation_Id. Expected nvarchar got bigint.
+   at System.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at System.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at System.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at System.Data.SqlClient.SqlCommand.FinishExecuteReader(SqlDataReader ds, RunBehavior runBehavior, String resetOptionsString)
+   at System.Data.SqlClient.SqlCommand.CompleteAsyncExecuteReader()
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQueryInternal(IAsyncResult asyncResult)
+   at System.Data.SqlClient.SqlCommand.EndExecuteNonQuery(IAsyncResult asyncResult)
+   at System.Threading.Tasks.TaskFactory`1.FromAsyncCoreLogic(IAsyncResult iar, Func`2 endFunction, Action`1 endAction, Task`1 promise, Boolean requiresSynchronization)
+--- End of stack trace from previous location where exception was thrown ---
+   at Extensions.ExecuteNonQueryEx(DbCommand command, CancellationToken cancellationToken) in /_/src/SqlPersistence/Extensions.cs:line 107
+ClientConnectionId:0a92c507-b32a-41ad-846e-d77daf146d2b
+Error Number:50000,State:0,Class:16
+   --- End of inner exception stack trace ---
+   at Extensions.ExecuteNonQueryEx(DbCommand command, CancellationToken cancellationToken) in /_/src/SqlPersistence/Extensions.cs:line 112
+   at NServiceBus.SqlDialect.ExecuteTableCommand(DbConnection connection, DbTransaction transaction, String script, String tablePrefix) in /_/src/SqlPersistence/Config/SqlDialect.cs:line 52
+   at NServiceBus.Persistence.Sql.ScriptRunner.InstallSagas(String scriptDirectory, DbConnection connection, DbTransaction transaction, String tablePrefix, SqlDialect sqlDialect) in /_/src/SqlPersistence/ScriptRunner.cs:line 132
+   at NServiceBus.Persistence.Sql.ScriptRunner.ExecuteInSeparateConnection[T](Func`6 installAction, String scriptDirectory, String tablePrefix, SqlDialect sqlDialect, Func`2 connectionBuilder) in /_/src/SqlPersistence/ScriptRunner.cs:line 73
+   at NServiceBus.Persistence.Sql.ScriptRunner.Install(SqlDialect sqlDialect, String tablePrefix, Func`2 connectionBuilder, String scriptDirectory, Boolean shouldInstallOutbox, Boolean shouldInstallSagas, Boolean shouldInstallSubscriptions, Boolean shouldInstallTimeouts) in /_/src/SqlPersistence/ScriptRunner.cs:line 53
+   at SqlPersistenceInstaller.Install(String identity) in /_/src/SqlPersistence/NeedToInstallSomething.cs:line 30
+2020-07-08 11:08:48.894 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:08:49.352 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:08:49.507 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:08:52.898 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:08:53.276 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:08:56.878 INFO  Immediate Retry is going to retry message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:08:56.878 INFO  Immediate Retry is going to retry message '41424e36-d350-4106-bd3d-abf100f0ddb5' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 41424e36-d350-4106-bd3d-abf100f0ddb5
+2020-07-08 11:08:56.878 INFO  Immediate Retry is going to retry message '87b2a075-ed8f-49ce-9e5a-abf100f0f5f0' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 87b2a075-ed8f-49ce-9e5a-abf100f0f5f0
+2020-07-08 11:08:56.932 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:56.940 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:56.921 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:56.878 INFO  Immediate Retry is going to retry message 'c9febc95-d639-47ca-baba-abf100f0d0ba' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: c9febc95-d639-47ca-baba-abf100f0d0ba
+2020-07-08 11:08:56.960 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.001 INFO  Immediate Retry is going to retry message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:08:56.998 INFO  Immediate Retry is going to retry message 'c9febc95-d639-47ca-baba-abf100f0d0ba' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: c9febc95-d639-47ca-baba-abf100f0d0ba
+2020-07-08 11:08:57.011 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.017 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:56.998 INFO  Immediate Retry is going to retry message '87b2a075-ed8f-49ce-9e5a-abf100f0f5f0' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 87b2a075-ed8f-49ce-9e5a-abf100f0f5f0
+2020-07-08 11:08:57.011 INFO  Immediate Retry is going to retry message '41424e36-d350-4106-bd3d-abf100f0ddb5' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 41424e36-d350-4106-bd3d-abf100f0ddb5
+2020-07-08 11:08:57.035 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.041 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.054 INFO  Immediate Retry is going to retry message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:08:57.055 INFO  Immediate Retry is going to retry message 'c9febc95-d639-47ca-baba-abf100f0d0ba' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: c9febc95-d639-47ca-baba-abf100f0d0ba
+2020-07-08 11:08:57.064 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.069 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.070 INFO  Immediate Retry is going to retry message '87b2a075-ed8f-49ce-9e5a-abf100f0f5f0' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 87b2a075-ed8f-49ce-9e5a-abf100f0f5f0
+2020-07-08 11:08:57.085 INFO  Immediate Retry is going to retry message '41424e36-d350-4106-bd3d-abf100f0ddb5' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 41424e36-d350-4106-bd3d-abf100f0ddb5
+2020-07-08 11:08:57.104 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.123 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.130 ERROR Moving message 'c9febc95-d639-47ca-baba-abf100f0d0ba' to the error queue 'error' because processing failed due to an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: c9febc95-d639-47ca-baba-abf100f0d0ba
+2020-07-08 11:08:57.130 WARN  Delayed Retry will reschedule message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' after a delay of 00:08:00 because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:08:57.160 ERROR Moving message '41424e36-d350-4106-bd3d-abf100f0ddb5' to the error queue 'error' because processing failed due to an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 41424e36-d350-4106-bd3d-abf100f0ddb5
+2020-07-08 11:08:57.159 ERROR Moving message '87b2a075-ed8f-49ce-9e5a-abf100f0f5f0' to the error queue 'error' because processing failed due to an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 87b2a075-ed8f-49ce-9e5a-abf100f0f5f0
+2020-07-08 11:08:57.231 FATAL Message sent to Delayed Retries.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.233 FATAL Message sent to error queue.
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.233 FATAL Message sent to error queue.
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:08:57.233 FATAL Message sent to error queue.
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:09:52.548 WARN  You are using a basic message to do pub/sub. Consider implementing the more specific ICommand and IEvent interfaces on the type 'MessagesClasses.MeasureReceived' to help NServiceBus to enforce messaging best practices for you.
+2020-07-08 11:09:52.669 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:09:52.710 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:09:52.739 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:09:52.816 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:09:52.844 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:09:52.857 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:09:52.895 WARN  Delayed Retry will reschedule message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' after a delay of 00:04:00 because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:09:52.910 FATAL Message sent to Delayed Retries.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:13:52.994 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:13:53.003 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:13:53.034 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:13:53.040 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:13:53.058 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:13:53.065 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:13:53.085 WARN  Delayed Retry will reschedule message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' after a delay of 00:08:00 because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:13:53.120 FATAL Message sent to Delayed Retries.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:16:57.299 INFO  Immediate Retry is going to retry message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:16:57.306 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:16:57.347 INFO  Immediate Retry is going to retry message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:16:57.354 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:16:57.373 INFO  Immediate Retry is going to retry message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:16:57.380 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:16:57.408 ERROR Moving message '1d233b94-72d9-4ec0-bac9-abf100f2c5a7' to the error queue 'error' because processing failed due to an exception:
+System.InvalidCastException: Unable to cast object of type 'System.String' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 1d233b94-72d9-4ec0-bac9-abf100f2c5a7
+2020-07-08 11:16:57.421 FATAL Message sent to error queue.
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:18:54.169 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:18:54.742 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:18:54.960 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:18:58.411 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:18:58.662 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:19:08.607 WARN  You are using a basic message to do pub/sub. Consider implementing the more specific ICommand and IEvent interfaces on the type 'MessagesClasses.MeasureReceived' to help NServiceBus to enforce messaging best practices for you.
+2020-07-08 11:19:09.272 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.Int32' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:19:09.313 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:19:09.330 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.Int32' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:19:09.336 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:19:09.352 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.Int32' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:19:09.357 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:19:09.372 WARN  Delayed Retry will reschedule message '8c796437-7cd5-4643-a321-abf200891806' after a delay of 00:04:00 because of an exception:
+System.InvalidCastException: Unable to cast object of type 'System.Int32' to type 'System.Guid'.
+   at NServiceBus.PropertySagaFinder`1.Find(IBuilder builder, SagaFinderDefinition finderDefinition, SynchronizedStorageSession storageSession, ContextBag context, Object message)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:19:09.395 FATAL Message sent to Delayed Retries.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:21:57.336 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:21:57.849 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:21:58.024 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:22:02.756 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:22:02.954 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:22:38.506 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:22:38.911 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:22:39.044 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:22:41.885 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:22:42.043 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:24:59.853 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:25:00.332 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:25:00.467 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:25:03.207 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:25:03.361 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:27:06.195 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:27:06.985 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:27:07.294 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:27:10.826 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:27:10.997 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:29:40.741 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:29:41.150 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:29:41.306 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:29:44.145 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:29:44.310 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:31:15.250 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:31:15.679 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:31:15.843 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:31:18.636 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:31:18.828 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:33:05.148 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:33:05.553 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:33:05.709 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:33:08.663 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:33:08.880 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:34:18.199 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:34:18.199 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:40:12.699 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:40:13.108 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:40:13.246 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:40:38.626 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:40:38.810 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:42:40.321 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:42:40.752 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:42:40.907 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:42:46.000 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:42:46.165 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:43:30.095 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:43:30.095 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:43:30.156 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:43:30.156 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:43:43.905 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:43:43.905 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:43:43.914 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:43:43.919 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:43:50.445 INFO  Immediate Retry is going to retry message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:43:50.445 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:43:50.452 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:43:50.459 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:43:56.653 ERROR Moving message '3a2e422b-ebc5-4e75-b6ec-abf200868c64' to the error queue 'error' because processing failed due to an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 3a2e422b-ebc5-4e75-b6ec-abf200868c64
+2020-07-08 11:43:56.654 WARN  Delayed Retry will reschedule message '8c796437-7cd5-4643-a321-abf200891806' after a delay of 00:08:00 because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:43:56.765 FATAL Message sent to error queue.
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:43:56.766 FATAL Message sent to Delayed Retries.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:44:37.753 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:44:38.176 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:44:38.359 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:44:43.525 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:44:43.707 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:45:18.504 WARN  You are using a basic message to do pub/sub. Consider implementing the more specific ICommand and IEvent interfaces on the type 'MessagesClasses.MeasureReceived' to help NServiceBus to enforce messaging best practices for you.
+2020-07-08 11:45:26.403 INFO  Immediate Retry is going to retry message '8e85dd0d-6349-4920-a03a-abf2009047bf' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:45:26.445 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:45:30.202 INFO  Immediate Retry is going to retry message '8e85dd0d-6349-4920-a03a-abf2009047bf' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:45:30.213 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:45:33.032 INFO  Immediate Retry is going to retry message '8e85dd0d-6349-4920-a03a-abf2009047bf' because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:45:33.052 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:45:35.582 WARN  Delayed Retry will reschedule message '8e85dd0d-6349-4920-a03a-abf2009047bf' after a delay of 00:04:00 because of an exception:
+System.Exception: The correlated property 'Id' on saga 'AddMeasureHandler' does not have a value.
+A correlated property must have a non default (i.e. non null and non-empty) value assigned when a new saga instance is created.
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateCorrelationPropertyHaveValue(Object currentCorrelationPropertyValue)
+   at NServiceBus.Sagas.ActiveSagaInstance.ValidateChanges()
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:45:35.626 FATAL Message sent to Delayed Retries.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:48:10.990 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:48:11.442 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:48:11.592 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:48:23.651 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:48:23.837 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:48:35.716 WARN  You are using a basic message to do pub/sub. Consider implementing the more specific ICommand and IEvent interfaces on the type 'MessagesClasses.MeasureReceived' to help NServiceBus to enforce messaging best practices for you.
+2020-07-08 11:49:45.563 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:49:46.196 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:49:46.345 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:49:57.842 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:49:58.041 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:51:14.133 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:51:14.564 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:51:14.719 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:51:17.580 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:51:17.845 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:52:28.175 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:52:28.589 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:52:28.735 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:52:31.401 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:52:31.614 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:52:58.727 INFO  Immediate Retry is going to retry message '8e85dd0d-6349-4920-a03a-abf2009047bf' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:52:55:540810 Z
+	Handler failure time: 2020-07-08 08:52:58:715011 Z
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:52:58.716 INFO  Immediate Retry is going to retry message '5a6d397b-5901-42b3-9c4f-abf200912eda' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:52:53:105250 Z
+	Handler failure time: 2020-07-08 08:52:55:522393 Z
+	Message ID: 5a6d397b-5901-42b3-9c4f-abf200912eda
+2020-07-08 11:53:00.980 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingMessageBehavior.InvokeIncomingMessageMutators(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.UnitOfWorkBehavior.InvokeUnitsOfWork(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.MutateIncomingTransportMessageBehavior.InvokeIncomingTransportMessagesMutators(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:52:58:733539 Z
+	Handler failure time: 2020-07-08 08:53:00:969510 Z
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:53:01.012 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:53:01.012 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:53:01.012 FATAL Message sent to Immediate Retry.
+        RetryAttempt:0
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:53:23.226 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:19:850698 Z
+	Handler failure time: 2020-07-08 08:53:22:096271 Z
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:53:23.273 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:53:25.226 INFO  Immediate Retry is going to retry message '8e85dd0d-6349-4920-a03a-abf2009047bf' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:22:101878 Z
+	Handler failure time: 2020-07-08 08:53:24:386486 Z
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:53:25.241 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:53:25.959 INFO  Immediate Retry is going to retry message '5a6d397b-5901-42b3-9c4f-abf200912eda' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:24:391691 Z
+	Handler failure time: 2020-07-08 08:53:25:951662 Z
+	Message ID: 5a6d397b-5901-42b3-9c4f-abf200912eda
+2020-07-08 11:53:27.581 FATAL Message sent to Immediate Retry.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:53:38.345 INFO  Immediate Retry is going to retry message '8c796437-7cd5-4643-a321-abf200891806' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:36:537025 Z
+	Handler failure time: 2020-07-08 08:53:38:334286 Z
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:53:40.732 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:53:42.701 INFO  Immediate Retry is going to retry message '8e85dd0d-6349-4920-a03a-abf2009047bf' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:40:745693 Z
+	Handler failure time: 2020-07-08 08:53:42:694824 Z
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:53:44.353 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:53:46.196 INFO  Immediate Retry is going to retry message '5a6d397b-5901-42b3-9c4f-abf200912eda' because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:44:377038 Z
+	Handler failure time: 2020-07-08 08:53:46:189702 Z
+	Message ID: 5a6d397b-5901-42b3-9c4f-abf200912eda
+2020-07-08 11:53:48.198 FATAL Message sent to Immediate Retry.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:53:51.889 ERROR Moving message '8c796437-7cd5-4643-a321-abf200891806' to the error queue 'error' because processing failed due to an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:48:215800 Z
+	Handler failure time: 2020-07-08 08:53:50:344845 Z
+	Message ID: 8c796437-7cd5-4643-a321-abf200891806
+2020-07-08 11:53:54.033 WARN  Delayed Retry will reschedule message '8e85dd0d-6349-4920-a03a-abf2009047bf' after a delay of 00:08:00 because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:51:899640 Z
+	Handler failure time: 2020-07-08 08:53:53:278345 Z
+	Message ID: 8e85dd0d-6349-4920-a03a-abf2009047bf
+2020-07-08 11:53:54.962 WARN  Delayed Retry will reschedule message '5a6d397b-5901-42b3-9c4f-abf200912eda' after a delay of 00:04:00 because of an exception:
+System.Exception: No destination specified for message: MessagesClasses.UpdateMeasureStatus
+   at NServiceBus.UnicastSendRouter.RouteUsingTable(IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.SelectRoute(State state, IOutgoingSendContext context)
+   at NServiceBus.UnicastSendRouter.Route(IOutgoingSendContext context)
+   at NServiceBus.SendConnector.Invoke(IOutgoingSendContext context, Func`2 stage)
+   at NServiceBus.InvokeHandlerTerminator.Terminate(IInvokeHandlerContext context)
+   at NServiceBus.SagaPersistenceBehavior.Invoke(IInvokeHandlerContext context, Func`2 next)
+   at NServiceBus.LoadHandlersConnector.Invoke(IIncomingLogicalMessageContext context, Func`2 stage)
+   at CurrentSessionBehavior.Invoke(IIncomingLogicalMessageContext context, Func`1 next) in /_/src/SqlPersistence/SynchronizedStorage/CurrentSessionBehavior.cs:line 18
+   at NServiceBus.ScheduledTaskHandlingBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.InvokeSagaNotFoundBehavior.Invoke(IIncomingLogicalMessageContext context, Func`2 next)
+   at NServiceBus.DeserializeMessageConnector.Invoke(IIncomingPhysicalMessageContext context, Func`2 stage)
+   at NServiceBus.InvokeAuditPipelineBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.ProcessingStatisticsBehavior.Invoke(IIncomingPhysicalMessageContext context, Func`2 next)
+   at NServiceBus.TransportReceiveToPhysicalMessageConnector.Invoke(ITransportReceiveContext context, Func`2 next)
+   at NServiceBus.MainPipelineExecutor.Invoke(MessageContext messageContext)
+   at NServiceBus.Transport.RabbitMQ.MessagePump.Process(BasicDeliverEventArgs message)
+Exception details:
+	Message type: MessagesClasses.MeasureReceived
+	Handler type: Subscriber.WebApi.NewMeasureHandler
+	Handler start time: 2020-07-08 08:53:54:047152 Z
+	Handler failure time: 2020-07-08 08:53:54:956115 Z
+	Message ID: 5a6d397b-5901-42b3-9c4f-abf200912eda
+2020-07-08 11:53:54.990 FATAL Message sent to Delayed Retries.
+        RetryAttempt:2
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:53:54.991 FATAL Message sent to error queue.
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.3</Weight></MeasureReceived>
+2020-07-08 11:53:55.003 FATAL Message sent to Delayed Retries.
+        RetryAttempt:1
+        Body:
+        <?xml version="1.0"?><MeasureReceived xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://tempuri.net/MessagesClasses"><Id>0</Id><CardId>1</CardId><Weight>63.5</Weight></MeasureReceived>
+2020-07-08 11:57:37.296 INFO  Logging to 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\' with level Info
+2020-07-08 11:57:37.802 INFO  Auditing processed messages to 'audit'
+2020-07-08 11:57:37.944 INFO  Selected active license from C:\Users\rina lerner\AppData\Local\ParticularSoftware\license.xml
+License Expiration: 2020-10-05
+2020-07-08 11:57:41.534 INFO  Executing 'C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Outbox_Create.sql'
+2020-07-08 11:57:41.785 INFO  Executing saga creation scripts:
+C:\Users\rina lerner\Documents\Brix\Weight Watchers\Subscriber.WebApi\bin\Debug\netcoreapp3.1\NServiceBus.Persistence.Sql\MsSqlServer\Sagas\AddMeasureHandler_Create.sql
+2020-07-08 11:59:24.547 WARN  You are using a basic message to do pub/sub. Consider implementing the more specific ICommand and IEvent interfaces on the type 'MessagesClasses.MeasureReceived' to help NServiceBus to enforce messaging best practices for you.

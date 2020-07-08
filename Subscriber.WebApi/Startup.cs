@@ -34,6 +34,8 @@ namespace Subscriber.WebApi
             services.AddScoped<ISubscriberServices, SubscriberServices>();
             services.AddScoped<IMeasureRepository, MeasureRepository>();
             services.AddScoped<IMeasureService, MeasureService>();
+            services.AddScoped<ITrackingService, TrackingService>();
+            services.AddScoped<ITrackingRepository, TrackingRepository>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.AddSwaggerGen(setupAction =>
             {

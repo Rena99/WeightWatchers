@@ -38,12 +38,12 @@ begin
 
   end if;
 
-/* AddProperty Id */
+/* AddProperty SagaId */
 
-select count(*) into n from all_tab_columns where table_name = 'ADDMEASUREHANDLER' and column_name = 'CORR_ID' and owner = currentSchema;
+select count(*) into n from all_tab_columns where table_name = 'ADDMEASUREHANDLER' and column_name = 'CORR_SAGAID' and owner = currentSchema;
 if(n = 0)
 then
-  sqlStatement := 'alter table "ADDMEASUREHANDLER" add ( CORR_ID NVARCHAR2(200) )';
+  sqlStatement := 'alter table "ADDMEASUREHANDLER" add ( CORR_SAGAID NVARCHAR2(200) )';
 
   execute immediate sqlStatement;
 end if;
@@ -62,19 +62,19 @@ select data_type ||
     end
   end into dataType
 from all_tab_columns
-where table_name = 'ADDMEASUREHANDLER' and column_name = 'CORR_ID' and owner = currentSchema;
+where table_name = 'ADDMEASUREHANDLER' and column_name = 'CORR_SAGAID' and owner = currentSchema;
 
 if(dataType <> 'NVARCHAR2(200)')
 then
-  raise_application_error(-20000, 'Incorrect data type for Correlation_CORR_ID.  Expected "NVARCHAR2(200)" got "' || dataType || '".');
+  raise_application_error(-20000, 'Incorrect data type for Correlation_CORR_SAGAID.  Expected "NVARCHAR2(200)" got "' || dataType || '".');
 end if;
 
-/* WriteCreateIndex Id */
+/* WriteCreateIndex SagaId */
 
-select count(*) into n from user_indexes where table_name = 'ADDMEASUREHANDLER' and index_name = 'SAGAIDX_38DE8259442357A9DD6358';
+select count(*) into n from user_indexes where table_name = 'ADDMEASUREHANDLER' and index_name = 'SAGAIDX_633E833544ADD30DAF385D';
 if(n = 0)
 then
-  sqlStatement := 'create unique index "SAGAIDX_38DE8259442357A9DD6358" on "ADDMEASUREHANDLER" (CORR_ID ASC)';
+  sqlStatement := 'create unique index "SAGAIDX_633E833544ADD30DAF385D" on "ADDMEASUREHANDLER" (CORR_SAGAID ASC)';
 
   execute immediate sqlStatement;
 end if;
@@ -86,7 +86,7 @@ end if;
 select count(*) into n
 from all_tab_columns
 where table_name = 'ADDMEASUREHANDLER' and column_name like 'CORR_%' and
-        column_name <> 'CORR_ID' and owner = currentSchema;
+        column_name <> 'CORR_SAGAID' and owner = currentSchema;
 
 if(n > 0)
 then
@@ -94,7 +94,7 @@ then
   select 'alter table "ADDMEASUREHANDLER" drop column ' || column_name into sqlStatement
   from all_tab_columns
   where table_name = 'ADDMEASUREHANDLER' and column_name like 'CORR_%' and
-        column_name <> 'CORR_ID' and owner = currentSchema;
+        column_name <> 'CORR_SAGAID' and owner = currentSchema;
 
   execute immediate sqlStatement;
 

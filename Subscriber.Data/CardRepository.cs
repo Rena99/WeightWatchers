@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Subscriber.Data.Models;
+using Subscriber.Data.Entities;
 using Subscriber.Models;
 using Subscriber.Services.Interfaces;
 using Subscriber.Services.Models;
@@ -14,10 +14,12 @@ namespace Subscriber.Data
     {
         private readonly WeightWatchers weightWatchers;
         private readonly IMapper mapper;
-        public CardRepository(WeightWatchers weightWatchers, IMapper mapper)
+        private readonly ITrackingService trackingService;
+        public CardRepository(WeightWatchers weightWatchers, IMapper mapper, ITrackingService trackingService)
         {
             this.weightWatchers = weightWatchers;
             this.mapper = mapper;
+            this.trackingService = trackingService;
         }
         public UserModel GetCard(int id)
         {
@@ -36,6 +38,12 @@ namespace Subscriber.Data
             card.UpdateDate = DateTime.Now;
             card.Weight = (double)cardModel.Weight;
             card.BMI = CalculateBMI(card.Height, card.Weight);
+            trackingService.UpdateTable(new TrackingModel()
+            {
+                CardId = card.Id,
+                Weight = card.Weight,
+                BMI = card.BMI
+            });
             weightWatchers.SaveChanges();
         }
 
